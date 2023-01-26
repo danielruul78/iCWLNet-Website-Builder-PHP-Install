@@ -20,13 +20,15 @@ ini_set( 'display_errors', '1' );
 		$inner_match="";
 		$start_count=0;
 		$end_count=0;
+        $start_tag="[";
+        $end_tag="]";
 		while($search<=$buffer_size){
 		
 		    $sub_string = substr($buffer, $search, 1);
-			if($sub_string=="{"){
+			if($sub_string==$start_tag){
 				$start_count++;
 				$cur_match.=$sub_string;
-			}elseif($sub_string=="}"){
+			}elseif($sub_string==$end_tag){
 				$end_count++;
 				$cur_match.=$sub_string;
 			}else{
@@ -160,16 +162,19 @@ ini_set( 'display_errors', '1' );
             }
         break;
         case "/step-2/":
-            $message.='Step 2-';
+            //$message.='Step 2-<br>';
+            $total_count=0;
             $zip = new ZipArchive;
             if ($zip->open('./install.zip') === TRUE) {
                 $zip->extractTo('.');
                 $zip->close();
-                $message.='ok';
+                $message.='Files Unzipped<br>';
+                $total_count++;
             } else {
                 $message.='failed';
             }
             $file_array=array();
+            $file_array[]="./";
             $file_array[]="./index.php";
             $file_array[]="./.htaccess";
             $file_array[]="./info.php";
@@ -177,21 +182,62 @@ ini_set( 'display_errors', '1' );
             $file_array[]="./classes/info.php";
             $file_array[]="./cache";
             $file_array[]="./cache/cookies";
+            $total_files=count($file_array);
+            
+            $total_items=13;
+            $file_count=0;
+            $total_dirs=3;
+            $dir_count=0;
             foreach($file_array as $val){
                 if (file_exists($val)) {
-                    $message.="$filename exists<br>";
+                    //$message.="$filename exists<br>";
+                    $file_count++;
+                    $total_count++;
+                    if(is_dir($val)){
+                        //$perms=fileperms($val);
+                        $perms=substr(sprintf('%o', fileperms($val)), -4);
+                        if($perms>=666){
+                            $dir_count++;
+                            $total_count++;
+                        }
+                        
+                    }
+                    //$message.=$val." exists<br>";
                 } else {
-                    $message.="$filename does not exist<br>";
+                   // $message.=$val." does not exist<br>";
+                }
+            }
+            $message.="Directory Permissions:- ".$dir_count." of ".$total_dirs."<br>";
+            $message.="Install Items:-".$file_count." of ".$total_files."<br>";
+
+            $test_source_code=Display($RemoteServer,$LocalServer,"/test/");
+            if(strlen($test_source_code)>0){
+                $message.="Search engine friendly URLS working<br>";
+                $total_count++;
+            }else{
+                $message.="Search engine friendly URLS broken<br>";
+            }
+            $Install_Percent=($total_count/$total_items)*100;
+            $message.="<br><br>Total Install Percent:- ".$Install_Percent."%<br>";
+
+
+            if(isset($Install_Percent)){
+                if($Install_Percent==100){
+                    $message.="<br><br><a href='install.php?uri=".urlencode("/step-3/")."'>Continue to Step 3</a><br>";
+            
                 }
             }
         break;
 
     }
-    //print "++".$message."++";
+    //print "+1+".$message."++";
+    
+    
 
     $tag_match_array["message"]=$message;
+    
     $source_code=callback($source_code);
     echo $source_code;
 
-
+    
 ?>
