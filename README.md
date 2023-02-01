@@ -8,3 +8,5 @@ Run the file from your browser and fill in the required details. You should reci
 https://sitemanage.info
 
 From here you can manage your websites details such as adding a page or even adding a free website. The administration lets you manage more that one website domain even on different servers.
+
+<a href="http://creativeweblogic.net">Website design Development Programing Promotion Hosting</a>
